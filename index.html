@@ -17,6 +17,8 @@
       --text-dark: #3F1D0B;
       --text-soft: #7A533E;
       --green-leaf: #388E3C;
+      --btn-save: #2E7D32;
+      --btn-save-border: #1B5E20;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -66,12 +68,23 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: transform 0.05s ease;
     }
     .pixel-btn:active {
       transform: translate(2px, 2px);
       box-shadow: inset 2px 2px 0px var(--wood-border), 1px 1px 0px rgba(0,0,0,0.25);
     }
+
+    .save-btn {
+      width: 100%;
+      background: var(--btn-save);
+      border-color: var(--btn-save-border);
+      box-shadow: inset 2px 2px 0px #81C784, 3px 3px 0px rgba(0,0,0,0.25);
+      font-size: 16px;
+      padding: 10px 0;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
     .file-input-wrapper {
       position: relative;
       overflow: hidden;
@@ -141,6 +154,38 @@
       font-size: 13px;
       color: var(--text-soft);
       font-weight: 700;
+    }
+
+    /* 修改器輸入表單 */
+    .editor-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #FAF0DF;
+      border: 2px solid var(--wood-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+    }
+    .input-row label {
+      font-weight: bold;
+      font-size: 14px;
+      color: var(--wood-dark);
+    }
+    .pixel-input {
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      width: 140px;
+      padding: 2px 8px;
+      border: 2px solid var(--wood-main);
+      border-radius: 6px;
+      background: #FFF;
+      text-align: right;
+      color: var(--wood-dark);
     }
 
     .weather-box {
@@ -262,7 +307,7 @@
     <span>🌾</span>
     <div style="font-weight: 900; font-size: 16px; margin-bottom: 6px;">尚未讀取星露谷存檔</div>
     <div style="font-size: 13px; color: var(--text-soft); line-height: 1.6;">
-      請點擊右上角的「讀取存檔」按鈕<br>選取存檔主檔案或 _SVBAK 備份檔即可！
+      請點擊右上角按鈕讀取存檔<br>讀取後即可即時修改金錢、體力等數值！
     </div>
   </div>
 
@@ -274,6 +319,26 @@
         <div class="farmer-money" id="dispMoney">0 G</div>
       </div>
       <div class="farmer-date" id="dispDate">第 1 年・春季 1 日</div>
+    </div>
+
+    <!-- 數值修改器面板 -->
+    <div class="section-label">🛠️ 存檔數值修改</div>
+    <div class="wood-box">
+      <div class="editor-grid">
+        <div class="input-row">
+          <label>💰 持有金錢</label>
+          <input type="number" id="editMoney" class="pixel-input" />
+        </div>
+        <div class="input-row">
+          <label>⚡ 最大體力</label>
+          <input type="number" id="editStamina" class="pixel-input" />
+        </div>
+        <div class="input-row">
+          <label>❤️ 最大生命值</label>
+          <input type="number" id="editHealth" class="pixel-input" />
+        </div>
+      </div>
+      <button class="pixel-btn save-btn" id="btnDownloadSave">💾 儲存並下載修改後的存檔</button>
     </div>
 
     <!-- 明日天氣推算 -->
@@ -306,6 +371,9 @@
   </main>
 
   <script>
+    let rawXmlDoc = null;
+    let originalFileName = "SaveGame";
+
     const villagerMeta = {
       Robin: { name: "羅賓", bday: "秋季 21 日", gifts: ["山羊起司", "桃子", "義大利麵", "硬木"] },
       Penny: { name: "潘妮", bday: "秋季 2 日", gifts: ["鑽石", "祖母綠", "甜瓜", "虞美人花", "紅甘藍燉菜"] },
@@ -407,6 +475,7 @@
       const file = e.target.files[0];
       if (!file) return;
 
+      originalFileName = file.name.replace("_SVBAK", "");
       document.getElementById('btnText').innerText = "🔄 讀取中...";
 
       const reader = new FileReader();
@@ -414,27 +483,28 @@
         try {
           const text = evt.target.result;
           const parser = new DOMParser();
-          const xml = parser.parseFromString(text, "application/xml");
+          rawXmlDoc = parser.parseFromString(text, "application/xml");
 
-          const parseError = xml.querySelector("parsererror");
-          if (parseError) {
-            throw new Error("XML 解析錯誤");
-          }
+          const parseError = rawXmlDoc.querySelector("parsererror");
+          if (parseError) throw new Error("XML 解析錯誤");
 
           // 1. 農夫資訊
-          const farmerName = xml.querySelector('player > name')?.textContent || "農夫";
-          const farmName = xml.querySelector('player > farmName')?.textContent || "農場";
-          const money = parseInt(xml.querySelector('player > money')?.textContent || "0").toLocaleString();
-          const year = xml.querySelector('yearForSaveGame')?.textContent || "1";
-          const day = parseInt(xml.querySelector('dayOfMonthForSaveGame')?.textContent || "1");
-          const seasonIdx = xml.querySelector('seasonForSaveGame')?.textContent || "0";
+          const farmerName = rawXmlDoc.querySelector('player > name')?.textContent || "農夫";
+          const farmName = rawXmlDoc.querySelector('player > farmName')?.textContent || "農場";
+          const moneyVal = parseInt(rawXmlDoc.querySelector('player > money')?.textContent || "0");
+          const staminaVal = parseInt(rawXmlDoc.querySelector('player > maxStamina')?.textContent || "270");
+          const healthVal = parseInt(rawXmlDoc.querySelector('player > maxHealth')?.textContent || "100");
+
+          const year = rawXmlDoc.querySelector('yearForSaveGame')?.textContent || "1";
+          const day = parseInt(rawXmlDoc.querySelector('dayOfMonthForSaveGame')?.textContent || "1");
+          const seasonIdx = rawXmlDoc.querySelector('seasonForSaveGame')?.textContent || "0";
           const seasons = ["春季", "夏季", "秋季", "冬季"];
           const seasonsEn = ["spring", "summer", "fall", "winter"];
           const seasonStr = seasons[parseInt(seasonIdx)] || "春季";
           const seasonEn = seasonsEn[parseInt(seasonIdx)] || "spring";
           
           let daysPlayed = 1;
-          const statItems = xml.querySelectorAll('stats > Values > item');
+          const statItems = rawXmlDoc.querySelectorAll('stats > Values > item');
           for (let item of statItems) {
             if (item.querySelector('key > string')?.textContent === "daysPlayed") {
               daysPlayed = parseInt(item.querySelector('value')?.textContent || "1");
@@ -442,11 +512,16 @@
             }
           }
 
-          const gameId = parseInt(xml.querySelector('UniqueMultiplayerID')?.textContent || "0");
+          const gameId = parseInt(rawXmlDoc.querySelector('UniqueMultiplayerID')?.textContent || "0");
 
           document.getElementById('dispFarmer').innerText = `${farmerName} 的 ${farmName}農場`;
-          document.getElementById('dispMoney').innerText = `${money} G`;
+          document.getElementById('dispMoney').innerText = `${moneyVal.toLocaleString()} G`;
           document.getElementById('dispDate').innerText = `第 ${year} 年・${seasonStr} ${day} 日`;
+
+          // 填入修改器欄位
+          document.getElementById('editMoney').value = moneyVal;
+          document.getElementById('editStamina').value = staminaVal;
+          document.getElementById('editHealth').value = healthVal;
 
           // 2. 天氣預測
           const w = predictTomorrow(gameId, daysPlayed, seasonEn, day);
@@ -456,7 +531,7 @@
           // 3. 農作物統計
           let readyCount = 0;
           let growingCount = 0;
-          const crops = xml.querySelectorAll('crop');
+          const crops = rawXmlDoc.querySelectorAll('crop');
           crops.forEach(crop => {
             const currentPhase = parseInt(crop.querySelector('currentPhase')?.textContent || "0");
             const phaseDays = crop.querySelectorAll('phaseDays > int');
@@ -473,7 +548,7 @@
           const vContainer = document.getElementById('villagerContainer');
           vContainer.innerHTML = '';
           const friendships = [];
-          xml.querySelectorAll('friendshipData > item').forEach(item => {
+          rawXmlDoc.querySelectorAll('friendshipData > item').forEach(item => {
             const key = item.querySelector('key > string')?.textContent;
             const pts = parseInt(item.querySelector('value > Friendship > Points')?.textContent || "0");
             if (key) friendships.push({ key, pts });
@@ -514,6 +589,57 @@
       };
 
       reader.readAsText(file, "UTF-8");
+    });
+
+    // 儲存並匯出存檔
+    document.getElementById('btnDownloadSave').addEventListener('click', function() {
+      if (!rawXmlDoc) {
+        alert('尚未讀取存檔！');
+        return;
+      }
+
+      const newMoney = document.getElementById('editMoney').value;
+      const newStamina = document.getElementById('editStamina').value;
+      const newHealth = document.getElementById('editHealth').value;
+
+      // 替換 XML 節點
+      const moneyNode = rawXmlDoc.querySelector('player > money');
+      const totalEarnedNode = rawXmlDoc.querySelector('player > totalMoneyEarned');
+      if (moneyNode) moneyNode.textContent = newMoney;
+      if (totalEarnedNode) {
+        const curTotal = parseInt(totalEarnedNode.textContent || "0");
+        totalEarnedNode.textContent = Math.max(curTotal, parseInt(newMoney));
+      }
+
+      const staminaNode = rawXmlDoc.querySelector('player > maxStamina');
+      const curStaminaNode = rawXmlDoc.querySelector('player > stamina');
+      if (staminaNode) staminaNode.textContent = newStamina;
+      if (curStaminaNode) curStaminaNode.textContent = newStamina;
+
+      const healthNode = rawXmlDoc.querySelector('player > maxHealth');
+      const curHealthNode = rawXmlDoc.querySelector('player > health');
+      if (healthNode) healthNode.textContent = newHealth;
+      if (curHealthNode) curHealthNode.textContent = newHealth;
+
+      // 序列化回 XML 字串
+      const serializer = new XMLSerializer();
+      let xmlString = serializer.serializeToString(rawXmlDoc);
+
+      // 確保 XML Declaration 標頭完整
+      if (!xmlString.startsWith('<?xml')) {
+        xmlString = '<?xml version="1.0" encoding="utf-8"?>\n' + xmlString;
+      }
+
+      // 產生下載檔案
+      const blob = new Blob([xmlString], { type: "application/xml;charset=utf-8" });
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = originalFileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      alert(`修改完成！已下載檔案「${originalFileName}」，放回手機存檔資料夾覆蓋即可。`);
     });
   </script>
 </body>
