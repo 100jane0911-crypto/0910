@@ -26,7 +26,7 @@
     body {
       margin: 0;
       padding: 16px;
-      padding-bottom: 85px;
+      padding-bottom: 90px;
       background: #D9BE9B url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="%23D9BE9B"/><rect x="0" y="0" width="20" height="20" fill="%23D3B58E"/></svg>');
       background-size: 20px 20px;
       font-family: 'Zen Maru Gothic', -apple-system, sans-serif;
@@ -202,6 +202,30 @@
       margin-bottom: 8px;
       padding: 8px 0;
     }
+
+    .villager-card { padding: 10px 12px; margin-bottom: 8px; }
+    .v-header { display: flex; justify-content: space-between; align-items: center; }
+    .v-name { font-size: 15px; font-weight: 900; color: var(--wood-dark); }
+    .v-bday {
+      font-size: 10px;
+      font-weight: 700;
+      background: var(--parchment-deep);
+      border: 1px solid var(--wood-border);
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    .heart-track { font-size: 13px; margin: 4px 0; letter-spacing: 1px; }
+    .pts-text { font-family: 'VT323', monospace; font-size: 16px; color: var(--text-soft); }
+    .gift-tag-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .gift-tag {
+      background: #FFFFFF;
+      border: 1px solid #DFCCB7;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #794C2F;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -218,7 +242,7 @@
     <div style="font-size: 44px; margin-bottom: 8px;">🌾</div>
     <div style="font-weight: 900; font-size: 16px; margin-bottom: 6px;">尚未讀取星露谷存檔</div>
     <div style="font-size: 13px; color: var(--text-soft); line-height: 1.6;">
-      點選右上角讀取存檔<br>即可一鍵幻化銀河之劍、升級背包與倉庫內的所有工具！
+      點選右上角讀取存檔<br>即可解鎖銀河之劍、銥金工具、村民與狗狗滿心！
     </div>
   </div>
 
@@ -281,8 +305,25 @@
     <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚔️ 武器客製強化 (含背包與儲物箱)</div>
     <div id="weaponContainer"></div>
 
+    <!-- 寵物與村民社交 -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0 6px 4px;">
+      <span style="font-size:13px; font-weight:900; color:var(--wood-dark);">🐶 寵物與村民好感管理</span>
+      <div style="display:flex; gap:6px;">
+        <button class="pixel-btn" id="btnMaxPet" style="background:#E65100; border-color:#BF360C; font-size:11px; padding:3px 8px;">🐶 狗狗滿心</button>
+        <button class="pixel-btn" id="btnMaxAllHearts" style="background:#C2185B; border-color:#880E4F; font-size:11px; padding:3px 8px;">💖 村民全員 10 心</button>
+      </div>
+    </div>
+    <div id="petBox" class="wood-box" style="display:none; padding:10px 12px; margin-bottom:8px;">
+      <div class="v-header">
+        <span class="v-name" id="dispPetName">🐶 寵物</span>
+        <span class="v-bday" style="background:#FFE0B2;">忠誠寵物</span>
+      </div>
+      <div class="heart-track" id="dispPetHearts">❤️❤️❤️❤️❤️</div>
+    </div>
+    <div id="villagerContainer"></div>
+
     <!-- 基礎數值微調 -->
-    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚙️ 基礎數值微調</div>
+    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 16px 0 6px 4px;">⚙️ 基礎數值微調</div>
     <div class="wood-box">
       <div class="input-row">
         <label>💰 持有金錢</label>
@@ -307,6 +348,37 @@
   <script>
     let rawXmlDoc = null;
     let originalFileName = "SaveGame";
+
+    const villagerMeta = {
+      Robin: { name: "羅賓", bday: "秋季 21 日", gifts: ["山羊起司", "桃子", "義大利麵", "硬木"] },
+      Penny: { name: "潘妮", bday: "秋季 2 日", gifts: ["鑽石", "祖母綠", "甜瓜", "虞美人花", "紅甘藍燉菜"] },
+      Jas: { name: "賈斯", bday: "夏季 4 日", gifts: ["粉紅蛋糕", "梅子布丁", "妖精玫瑰"] },
+      Pam: { name: "潘姆", bday: "春季 18 日", gifts: ["啤酒", "仙人掌果實", "防風草", "防風草湯"] },
+      Lewis: { name: "劉易斯", bday: "春季 7 日", gifts: ["秋日豐收", "辣椒", "綠茶", "蔬菜雜燴"] },
+      Maru: { name: "瑪魯", bday: "夏季 10 日", gifts: ["鑽石", "金條", "銥條", "電池組", "草莓"] },
+      Haley: { name: "海莉", bday: "春季 14 日", gifts: ["向日葵", "粉紅蛋糕", "椰子", "水果沙拉"] },
+      Sam: { name: "山姆", bday: "夏季 17 日", gifts: ["披薩", "仙人掌果實", "楓糖漿", "老虎眼石"] },
+      Abigail: { name: "阿比蓋爾", bday: "秋季 13 日", gifts: ["紫水晶", "黑莓脆皮餅", "巧克力蛋糕", "河豚", "南瓜"] },
+      Sebastian: { name: "塞巴斯蒂安", bday: "冬季 10 日", gifts: ["冰凍之淚", "黑曜石", "南瓜湯", "生魚片", "虛空蛋"] },
+      Alex: { name: "亞歷克斯", bday: "夏季 13 日", gifts: ["全早餐", "鮭魚拼盤"] },
+      Elliott: { name: "艾利歐特", bday: "秋季 5 日", gifts: ["螃蟹蛋糕", "鴨毛", "龍蝦", "石榴"] },
+      Harvey: { name: "哈維", bday: "冬季 14 日", gifts: ["咖啡", "醃菜", "超級餐", "松露油", "果酒"] },
+      Shane: { name: "謝恩", bday: "春季 20 日", gifts: ["啤酒", "辣椒", "披薩", "辣椒波普"] },
+      Emily: { name: "艾蜜莉", bday: "春季 27 日", gifts: ["紫水晶", "海藍寶石", "綠寶石", "紅寶石", "布料"] },
+      Leah: { name: "莉亞", bday: "冬季 23 日", gifts: ["山羊起司", "沙拉", "炒蔬菜", "果酒"] },
+      Clint: { name: "克林特", bday: "冬季 26 日", gifts: ["紫水晶", "金條", "銥條", "翡翠", "紅寶石"] },
+      Demetrius: { name: "德米特里厄斯", bday: "夏季 19 日", gifts: ["豆類火鍋", "冰淇淋", "草莓", "大米布丁"] },
+      Evelyn: { name: "艾芙琳", bday: "冬季 2 日", gifts: ["巧克力蛋糕", "鑽石", "甜菜", "鬱金香"] },
+      George: { name: "喬治", bday: "秋季 24 日", gifts: ["煎蘑菇", "韭蔥"] },
+      Gus: { name: "格斯", bday: "夏季 8 日", gifts: ["鑽石", "深色啤酒", "橙子", "法式蝸牛"] },
+      Jodi: { name: "喬迪", bday: "秋季 11 日", gifts: ["巧克力蛋糕", "脆皮鱸魚", "煎蛋捲", "蔬菜雜燴"] },
+      Linus: { name: "萊納斯", bday: "冬季 3 日", gifts: ["藍莓酸奶", "仙人掌果實", "椰子", "海鮮熱湯"] },
+      Marnie: { name: "瑪妮", bday: "秋季 18 日", gifts: ["鑽石", "農夫午餐", "南瓜", "粉紅蛋糕"] },
+      Pierre: { name: "皮埃爾", bday: "春季 26 日", gifts: ["炸魷魚"] },
+      Vincent: { name: "文森特", bday: "春季 10 日", gifts: ["蔓越莓糖果", "生薑", "粉紅蛋糕", "蝸牛"] },
+      Willy: { name: "威利", bday: "春季 24 日", gifts: ["鯰魚", "鑽石", "銥條", "章魚", "海參"] },
+      Caroline: { name: "卡洛琳", bday: "冬季 7 日", gifts: ["魚肉捲", "綠茶", "水仙花"] }
+    };
 
     class DotNetRandom {
       constructor(seed) {
@@ -374,7 +446,6 @@
       return { text: "晴天", icon: "☀️" };
     }
 
-    // 強效全域武器掃描器（相容 1.5/1.6 與命名空間）
     function getAllWeapons() {
       if (!rawXmlDoc) return [];
       const allItems = rawXmlDoc.querySelectorAll('Item');
@@ -461,8 +532,12 @@
           document.getElementById('readyCount').innerText = readyCount;
           document.getElementById('growingCount').innerText = growingCount;
 
-          // 4. 渲染全域武器清單
+          // 4. 渲染武器清單
           renderWeapons();
+
+          // 5. 渲染寵物與村民
+          renderPet();
+          renderVillagers();
 
           document.getElementById('emptyView').style.display = 'none';
           document.getElementById('mainView').style.display = 'block';
@@ -488,7 +563,7 @@
       const weapons = getAllWeapons();
 
       if (weapons.length === 0) {
-        container.innerHTML = '<div class="wood-box" style="text-align:center; color:var(--text-soft);">背包與箱子內目前沒有找到武器</div>';
+        container.innerHTML = '<div class="wood-box" style="text-align:center; color:var(--text-soft);">背包與箱子內目前沒有找到近戰武器</div>';
         return;
       }
 
@@ -526,13 +601,11 @@
       });
     }
 
-    // 幻化為銀河之劍
     window.transformToGalaxySword = function(idx) {
       const weapons = getAllWeapons();
       const wNode = weapons[idx];
       if (!wNode) return;
 
-      // 設置名稱與描述
       let nameNode = wNode.querySelector('name');
       if (!nameNode) { nameNode = rawXmlDoc.createElement('name'); wNode.appendChild(nameNode); }
       nameNode.textContent = "Galaxy Sword";
@@ -544,7 +617,6 @@
       if (!descNode) { descNode = rawXmlDoc.createElement('description'); wNode.appendChild(descNode); }
       descNode.textContent = "它由不可思議的宇宙能量打造而成。";
 
-      // 設置 ID（1.5 與 1.6 同步相容）
       const setOrCreate = (tag, val) => {
         let node = wNode.querySelector(tag);
         if (!node) { node = rawXmlDoc.createElement(tag); wNode.appendChild(node); }
@@ -556,7 +628,6 @@
       setOrCreate('itemId', '4');
       setOrCreate('QualifiedItemId', '(W)4');
 
-      // 注入頂級破表數值
       setOrCreate('minDamage', '999');
       setOrCreate('maxDamage', '9999');
       setOrCreate('speed', '50');
@@ -591,7 +662,93 @@
       alert('武器屬性已修改！別忘了點擊最下方的「儲存並匯出最新存檔」。');
     };
 
-    // 全域工具升級至銥金（全版相容，同步處理外觀標籤）
+    // 寵物渲染與滿心邏輯
+    function renderPet() {
+      const petNode = rawXmlDoc.querySelector('NPC[xsi\\:type="Dog"], NPC[xsi\\:type="Cat"], NPC[xsi\\:type="Pet"]');
+      if (!petNode) {
+        document.getElementById('petBox').style.display = 'none';
+        return;
+      }
+      document.getElementById('petBox').style.display = 'block';
+      const petName = petNode.querySelector('name')?.textContent || "狗狗";
+      const petFriendship = parseInt(petNode.querySelector('friendshipTowardFarmer')?.textContent || "0");
+      const petHearts = Math.min(5, Math.floor(petFriendship / 200));
+      document.getElementById('dispPetName').innerText = `🐶 寵物：${petName}`;
+      document.getElementById('dispPetHearts').innerHTML = '❤️'.repeat(petHearts) + '🤍'.repeat(5 - petHearts) + ` <span class="pts-text">(${petFriendship}/1000)</span>`;
+    }
+
+    document.getElementById('btnMaxPet').addEventListener('click', function() {
+      if (!rawXmlDoc) return;
+      const petNodes = rawXmlDoc.querySelectorAll('NPC[xsi\\:type="Dog"], NPC[xsi\\:type="Cat"], NPC[xsi\\:type="Pet"]');
+      petNodes.forEach(p => {
+        let fNode = p.querySelector('friendshipTowardFarmer');
+        if (!fNode) {
+          fNode = rawXmlDoc.createElement('friendshipTowardFarmer');
+          p.appendChild(fNode);
+        }
+        fNode.textContent = "1000"; // 寵物滿心為 1000 點
+      });
+      renderPet();
+      alert('🐶 寵物好感度已拉滿至 5 顆心 (1000分)！遊戲內會提示「狗狗非常愛你」！');
+    });
+
+    // 村民渲染與滿心
+    function renderVillagers() {
+      const vContainer = document.getElementById('villagerContainer');
+      vContainer.innerHTML = '';
+      const friendships = [];
+      rawXmlDoc.querySelectorAll('friendshipData > item').forEach(item => {
+        const key = item.querySelector('key > string')?.textContent;
+        const pts = parseInt(item.querySelector('value > Friendship > Points')?.textContent || "0");
+        if (key) friendships.push({ key, pts });
+      });
+
+      friendships.sort((a, b) => b.pts - a.pts);
+
+      friendships.forEach(f => {
+        const meta = villagerMeta[f.key] || { name: f.key, bday: "未知", gifts: ["暫無資料"] };
+        const hearts = Math.min(10, Math.floor(f.pts / 250));
+        const heartBar = '❤️'.repeat(hearts) + '🤍'.repeat(10 - hearts);
+        const giftBadges = meta.gifts.map(g => `<span class="gift-tag">${g}</span>`).join('');
+
+        const card = document.createElement('div');
+        card.className = 'wood-box villager-card';
+        card.innerHTML = `
+          <div class="v-header">
+            <span class="v-name">${meta.name}</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span class="v-bday">🎂 ${meta.bday}</span>
+              <button class="pixel-btn" onclick="maxSingleFriendship('${f.key}')" style="background:#AD1457; border-color:#880E4F; font-size:10px; padding:2px 6px;">💖 10心</button>
+            </div>
+          </div>
+          <div class="heart-track">${heartBar} <span class="pts-text">(${f.pts}/2500)</span></div>
+          <div class="gift-tag-list">${giftBadges}</div>
+        `;
+        vContainer.appendChild(card);
+      });
+    }
+
+    window.maxSingleFriendship = function(key) {
+      const items = rawXmlDoc.querySelectorAll('friendshipData > item');
+      for (let item of items) {
+        if (item.querySelector('key > string')?.textContent === key) {
+          const ptsNode = item.querySelector('value > Friendship > Points');
+          if (ptsNode) ptsNode.textContent = "2500";
+          break;
+        }
+      }
+      renderVillagers();
+    };
+
+    document.getElementById('btnMaxAllHearts').addEventListener('click', function() {
+      if (!rawXmlDoc) return;
+      const points = rawXmlDoc.querySelectorAll('friendshipData > item > value > Friendship > Points');
+      points.forEach(p => p.textContent = "2500");
+      renderVillagers();
+      alert('所有村民好感度已全部拉滿至 10 心 (2500分)！');
+    });
+
+    // 全域工具銥金化
     document.getElementById('btnMaxTools').addEventListener('click', function() {
       if (!rawXmlDoc) return;
       const items = rawXmlDoc.querySelectorAll('Item');
@@ -608,11 +765,9 @@
                        item.querySelector('upgradeLevel') || item.querySelector('UpgradeLevel');
 
         if (isTool) {
-          // 升級等級改為 4 (銥金)
           if (item.querySelector('upgradeLevel')) item.querySelector('upgradeLevel').textContent = "4";
           if (item.querySelector('UpgradeLevel')) item.querySelector('UpgradeLevel').textContent = "4";
 
-          // 1.6 版本同步調整 QualifiedItemId 與 Name
           if (typeAttr.includes('Pickaxe') || name.includes('Pickaxe')) {
             if (item.querySelector('name')) item.querySelector('name').textContent = "Iridium Pickaxe";
             if (item.querySelector('QualifiedItemId')) item.querySelector('QualifiedItemId').textContent = "(T)IridiumPickaxe";
@@ -637,7 +792,7 @@
       alert(`升級完成！共將 ${count} 件工具升級為「銥金等級」！`);
     });
 
-    // 水壺無限水（全域）
+    // 水壺無限水
     document.getElementById('btnBottomlessWater').addEventListener('click', function() {
       if (!rawXmlDoc) return;
       const items = rawXmlDoc.querySelectorAll('Item');
