@@ -19,7 +19,6 @@
       --green-leaf: #388E3C;
       --btn-save: #2E7D32;
       --btn-save-border: #1B5E20;
-      --danger-red: #C62828;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,7 +26,7 @@
     body {
       margin: 0;
       padding: 16px;
-      padding-bottom: 75px;
+      padding-bottom: 85px;
       background: #D9BE9B url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" fill="%23D9BE9B"/><rect x="0" y="0" width="20" height="20" fill="%23D3B58E"/></svg>');
       background-size: 20px 20px;
       font-family: 'Zen Maru Gothic', -apple-system, sans-serif;
@@ -78,7 +77,7 @@
 
     .save-bar {
       position: fixed;
-      bottom: 60px;
+      bottom: 16px;
       left: 16px;
       right: 16px;
       z-index: 99;
@@ -116,36 +115,6 @@
       box-shadow: inset 0 0 0 3px var(--wood-border), 0 5px 0px rgba(74, 40, 16, 0.3);
     }
 
-    /* 底部導覽列 */
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--wood-dark);
-      border-top: 3px solid var(--wood-border);
-      display: flex;
-      justify-content: space-around;
-      padding: 6px 0;
-      z-index: 100;
-    }
-    .tab-item {
-      color: #E2C9B1;
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      cursor: pointer;
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
-    .tab-item.active {
-      color: #FFF;
-      background: var(--wood-main);
-      box-shadow: inset 1px 1px 0px var(--wood-border);
-    }
-    .tab-icon { font-size: 18px; display: block; margin-bottom: 2px; }
-
-    /* 表單元件 */
     .input-row {
       display: flex;
       justify-content: space-between;
@@ -173,7 +142,6 @@
       color: var(--wood-dark);
     }
 
-    /* 天氣卡片 */
     .weather-box {
       background: linear-gradient(135deg, #E6F5F8 0%, #CEE7EE 100%);
       display: flex;
@@ -183,7 +151,6 @@
     .weather-icon { font-size: 42px; }
     .weather-text { font-size: 18px; font-weight: 900; color: #1F4550; }
 
-    /* 作物網格 */
     .crop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .crop-badge {
       background: #FAF0DF;
@@ -203,30 +170,6 @@
     .crop-badge.ready .crop-val { color: var(--green-leaf); }
     .crop-lbl { font-size: 11px; font-weight: 700; color: var(--text-soft); }
 
-    /* 村民卡片 */
-    .villager-card { padding: 10px 12px; margin-bottom: 8px; }
-    .v-header { display: flex; justify-content: space-between; align-items: center; }
-    .v-name { font-size: 15px; font-weight: 900; color: var(--wood-dark); }
-    .v-bday {
-      font-size: 10px;
-      font-weight: 700;
-      background: var(--parchment-deep);
-      border: 1px solid var(--wood-border);
-      padding: 2px 6px;
-      border-radius: 10px;
-    }
-    .gift-tag-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-    .gift-tag {
-      background: #FFFFFF;
-      border: 1px solid #DFCCB7;
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-      color: #794C2F;
-      font-weight: 700;
-    }
-
-    /* 快捷功能按鈕組 */
     .quick-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -249,6 +192,16 @@
     }
     .action-btn:active { background: #EBDAC2; }
     .action-icon { font-size: 20px; }
+
+    .galaxy-btn {
+      background: linear-gradient(135deg, #4A148C 0%, #311B92 100%);
+      border-color: #1A237E;
+      box-shadow: inset 2px 2px 0px #B39DDB, 3px 3px 0px rgba(0,0,0,0.25);
+      color: #FFF;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px 0;
+    }
   </style>
 </head>
 <body>
@@ -265,162 +218,95 @@
     <div style="font-size: 44px; margin-bottom: 8px;">🌾</div>
     <div style="font-weight: 900; font-size: 16px; margin-bottom: 6px;">尚未讀取星露谷存檔</div>
     <div style="font-size: 13px; color: var(--text-soft); line-height: 1.6;">
-      請點選右上角讀取存檔<br>即可解鎖神裝工坊、一鍵滿心與電視預報！
+      點選右上角讀取存檔<br>即可一鍵幻化銀河之劍、升級背包與倉庫內的所有工具！
     </div>
   </div>
 
   <div id="mainView" style="display: none;">
-
-    <!-- TAB 1: 儀表板 (資訊 & 基礎數值) -->
-    <div id="tabContentDashboard">
-      <div class="wood-box" style="background: linear-gradient(180deg, #FFF1DB 0%, var(--parchment) 100%);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="font-size:17px; font-weight:900; color:var(--wood-dark);" id="dispFarmer">農夫農場</div>
-          <div style="font-family:'VT323'; font-size:24px; color:#936000; background:#FFE8A3; border:2px solid #CCA045; padding:2px 8px; border-radius:16px;" id="dispMoney">0 G</div>
-        </div>
-        <div style="font-size:12px; color:var(--text-soft); font-weight:700; margin-top:4px;" id="dispDate">第 1 年・春季 1 日</div>
+    <!-- 農夫與金錢狀態 -->
+    <div class="wood-box" style="background: linear-gradient(180deg, #FFF1DB 0%, var(--parchment) 100%);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:17px; font-weight:900; color:var(--wood-dark);" id="dispFarmer">農夫農場</div>
+        <div style="font-family:'VT323'; font-size:24px; color:#936000; background:#FFE8A3; border:2px solid #CCA045; padding:2px 8px; border-radius:16px;" id="dispMoney">0 G</div>
       </div>
+      <div style="font-size:12px; color:var(--text-soft); font-weight:700; margin-top:4px;" id="dispDate">第 1 年・春季 1 日</div>
+    </div>
 
-      <!-- 天氣預測 -->
-      <div class="wood-box weather-box">
-        <div class="weather-icon" id="dispWeatherIcon">☀️</div>
-        <div>
-          <div style="font-size:11px; font-weight:bold; color:#4F7985;">電視預報 / 明日天氣</div>
-          <div class="weather-text" id="dispWeatherText">晴天</div>
-        </div>
+    <!-- 明日天氣推算 -->
+    <div class="wood-box weather-box">
+      <div class="weather-icon" id="dispWeatherIcon">☀️</div>
+      <div>
+        <div style="font-size:11px; font-weight:bold; color:#4F7985;">電視預報 / 明日天氣</div>
+        <div class="weather-text" id="dispWeatherText">晴天</div>
       </div>
+    </div>
 
-      <!-- 農作物狀態 -->
-      <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">🌱 作物成熟倒數</div>
-      <div class="wood-box" style="padding:10px;">
-        <div class="crop-grid">
-          <div class="crop-badge ready">
-            <div class="crop-val" id="readyCount">0</div>
-            <div class="crop-lbl">🌾 今日已成熟</div>
-          </div>
-          <div class="crop-badge">
-            <div class="crop-val" id="growingCount">0</div>
-            <div class="crop-lbl">💧 生長中作物</div>
-          </div>
+    <!-- 作物成熟倒數 -->
+    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">🌱 作物成熟倒數</div>
+    <div class="wood-box" style="padding:10px;">
+      <div class="crop-grid">
+        <div class="crop-badge ready">
+          <div class="crop-val" id="readyCount">0</div>
+          <div class="crop-lbl">🌾 今日已成熟</div>
         </div>
-      </div>
-
-      <!-- 基礎數值微調 -->
-      <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚙️ 基礎數值微調</div>
-      <div class="wood-box">
-        <div class="input-row">
-          <label>💰 持有金錢</label>
-          <input type="number" id="editMoney" class="pixel-input" />
-        </div>
-        <div class="input-row">
-          <label>⚡ 最大體力</label>
-          <input type="number" id="editStamina" class="pixel-input" />
-        </div>
-        <div class="input-row">
-          <label>❤️ 最大生命值</label>
-          <input type="number" id="editHealth" class="pixel-input" />
+        <div class="crop-badge">
+          <div class="crop-val" id="growingCount">0</div>
+          <div class="crop-lbl">💧 生長中作物</div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: 鐵匠神裝工坊 (武器/工具/背包) -->
-    <div id="tabContentSmith" style="display: none;">
-      <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 0 0 6px 4px;">⚡ 快速強化方案</div>
-      <div class="quick-actions">
-        <button class="action-btn" id="btnMaxTools">
-          <span class="action-icon">🪓</span>
-          <span>工具全變銥金等級</span>
-        </button>
-        <button class="action-btn" id="btnBottomlessWater">
-          <span class="action-icon">💧</span>
-          <span>水壺升級無限水</span>
-        </button>
-        <button class="action-btn" id="btnMaxStack">
-          <span class="action-icon">📦</span>
-          <span>背包現有道具×999</span>
-        </button>
-        <button class="action-btn" id="btnExpandBackpack">
-          <span class="action-icon">🎒</span>
-          <span>解鎖 36 格大背包</span>
-        </button>
-      </div>
-
-      <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚔️ 身上武器客製強化</div>
-      <div id="weaponContainer"></div>
+    <!-- 工具升級與背包/倉庫補給 -->
+    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚒️ 全域工具升級與補給 (含背包與儲物箱)</div>
+    <div class="quick-actions">
+      <button class="action-btn" id="btnMaxTools">
+        <span class="action-icon">🪓</span>
+        <span>全部工具變銥金</span>
+      </button>
+      <button class="action-btn" id="btnBottomlessWater">
+        <span class="action-icon">💧</span>
+        <span>全部水壺改無限水</span>
+      </button>
+      <button class="action-btn" id="btnMaxStack">
+        <span class="action-icon">📦</span>
+        <span>全域道具堆疊×999</span>
+      </button>
+      <button class="action-btn" id="btnExpandBackpack">
+        <span class="action-icon">🎒</span>
+        <span>解鎖 36 格大背包</span>
+      </button>
     </div>
 
-    <!-- TAB 3: 村民社交雷達 (好感度修改) -->
-    <div id="tabContentSocial" style="display: none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-        <span style="font-size:13px; font-weight:900; color:var(--wood-dark);">💖 村民好感管理</span>
-        <button class="pixel-btn" id="btnMaxAllHearts" style="background:#C2185B; border-color:#880E4F;">🌟 全員一鍵 10 心</button>
+    <!-- 武器客製與銀河之劍幻化 -->
+    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚔️ 武器客製強化 (含背包與儲物箱)</div>
+    <div id="weaponContainer"></div>
+
+    <!-- 基礎數值微調 -->
+    <div style="font-size:13px; font-weight:900; color:var(--wood-dark); margin: 12px 0 6px 4px;">⚙️ 基礎數值微調</div>
+    <div class="wood-box">
+      <div class="input-row">
+        <label>💰 持有金錢</label>
+        <input type="number" id="editMoney" class="pixel-input" />
       </div>
-      <div id="villagerContainer"></div>
+      <div class="input-row">
+        <label>⚡ 最大體力</label>
+        <input type="number" id="editStamina" class="pixel-input" />
+      </div>
+      <div class="input-row">
+        <label>❤️ 最大生命值</label>
+        <input type="number" id="editHealth" class="pixel-input" />
+      </div>
     </div>
 
     <!-- 浮動儲存條 -->
     <div class="save-bar">
       <button class="pixel-btn save-main-btn" id="btnDownloadSave">💾 儲存並匯出最新存檔</button>
     </div>
-
-    <!-- 底部導覽列 -->
-    <nav class="tab-bar">
-      <div class="tab-item active" id="tabDashboard" onclick="switchTab('tabContentDashboard', 'tabDashboard')">
-        <span class="tab-icon">🌾</span>農場儀表
-      </div>
-      <div class="tab-item" id="tabSmith" onclick="switchTab('tabContentSmith', 'tabSmith')">
-        <span class="tab-icon">⚒️</span>神裝工坊
-      </div>
-      <div class="tab-item" id="tabSocial" onclick="switchTab('tabContentSocial', 'tabSocial')">
-        <span class="tab-icon">💌</span>村民社交
-      </div>
-    </nav>
   </div>
 
   <script>
     let rawXmlDoc = null;
     let originalFileName = "SaveGame";
-
-    function switchTab(tabContentId, tabBtnId) {
-      document.getElementById('tabContentDashboard').style.display = 'none';
-      document.getElementById('tabContentSmith').style.display = 'none';
-      document.getElementById('tabContentSocial').style.display = 'none';
-      document.getElementById(tabContentId).style.display = 'block';
-
-      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabBtnId).classList.add('active');
-    }
-
-    const villagerMeta = {
-      Robin: { name: "羅賓", bday: "秋季 21 日", gifts: ["山羊起司", "桃子", "義大利麵", "硬木"] },
-      Penny: { name: "潘妮", bday: "秋季 2 日", gifts: ["鑽石", "祖母綠", "甜瓜", "虞美人花", "紅甘藍燉菜"] },
-      Jas: { name: "賈斯", bday: "夏季 4 日", gifts: ["粉紅蛋糕", "梅子布丁", "妖精玫瑰"] },
-      Pam: { name: "潘姆", bday: "春季 18 日", gifts: ["啤酒", "仙人掌果實", "防風草", "防風草湯"] },
-      Lewis: { name: "劉易斯", bday: "春季 7 日", gifts: ["秋日豐收", "辣椒", "綠茶", "蔬菜雜燴"] },
-      Maru: { name: "瑪魯", bday: "夏季 10 日", gifts: ["鑽石", "金條", "銥條", "電池組", "草莓"] },
-      Haley: { name: "海莉", bday: "春季 14 日", gifts: ["向日葵", "粉紅蛋糕", "椰子", "水果沙拉"] },
-      Sam: { name: "山姆", bday: "夏季 17 日", gifts: ["披薩", "仙人掌果實", "楓糖漿", "老虎眼石"] },
-      Abigail: { name: "阿比蓋爾", bday: "秋季 13 日", gifts: ["紫水晶", "黑莓脆皮餅", "巧克力蛋糕", "河豚", "南瓜"] },
-      Sebastian: { name: "塞巴斯蒂安", bday: "冬季 10 日", gifts: ["冰凍之淚", "黑曜石", "南瓜湯", "生魚片", "虛空蛋"] },
-      Alex: { name: "亞歷克斯", bday: "夏季 13 日", gifts: ["全早餐", "鮭魚拼盤"] },
-      Elliott: { name: "艾利歐特", bday: "秋季 5 日", gifts: ["螃蟹蛋糕", "鴨毛", "龍蝦", "石榴"] },
-      Harvey: { name: "哈維", bday: "冬季 14 日", gifts: ["咖啡", "醃菜", "超級餐", "松露油", "果酒"] },
-      Shane: { name: "謝恩", bday: "春季 20 日", gifts: ["啤酒", "辣椒", "披薩", "辣椒波普"] },
-      Emily: { name: "艾蜜莉", bday: "春季 27 日", gifts: ["紫水晶", "海藍寶石", "綠寶石", "紅寶石", "布料"] },
-      Leah: { name: "莉亞", bday: "冬季 23 日", gifts: ["山羊起司", "沙拉", "炒蔬菜", "果酒"] },
-      Clint: { name: "克林特", bday: "冬季 26 日", gifts: ["紫水晶", "金條", "銥條", "翡翠", "紅寶石"] },
-      Demetrius: { name: "德米特里厄斯", bday: "夏季 19 日", gifts: ["豆類火鍋", "冰淇淋", "草莓", "大米布丁"] },
-      Evelyn: { name: "艾芙琳", bday: "冬季 2 日", gifts: ["巧克力蛋糕", "鑽石", "甜菜", "鬱金香"] },
-      George: { name: "喬治", bday: "秋季 24 日", gifts: ["煎蘑菇", "韭蔥"] },
-      Gus: { name: "格斯", bday: "夏季 8 日", gifts: ["鑽石", "深色啤酒", "橙子", "法式蝸牛"] },
-      Jodi: { name: "喬迪", bday: "秋季 11 日", gifts: ["巧克力蛋糕", "脆皮鱸魚", "煎蛋捲", "蔬菜雜燴"] },
-      Linus: { name: "萊納斯", bday: "冬季 3 日", gifts: ["藍莓酸奶", "仙人掌果實", "椰子", "海鮮熱湯"] },
-      Marnie: { name: "瑪妮", bday: "秋季 18 日", gifts: ["鑽石", "農夫午餐", "南瓜", "粉紅蛋糕"] },
-      Pierre: { name: "皮埃爾", bday: "春季 26 日", gifts: ["炸魷魚"] },
-      Vincent: { name: "文森特", bday: "春季 10 日", gifts: ["蔓越莓糖果", "生薑", "粉紅蛋糕", "蝸牛"] },
-      Willy: { name: "威利", bday: "春季 24 日", gifts: ["鯰魚", "鑽石", "銥條", "章魚", "海參"] },
-      Caroline: { name: "卡洛琳", bday: "冬季 7 日", gifts: ["魚肉捲", "綠茶", "水仙花"] }
-    };
 
     class DotNetRandom {
       constructor(seed) {
@@ -488,6 +374,22 @@
       return { text: "晴天", icon: "☀️" };
     }
 
+    // 強效全域武器掃描器（相容 1.5/1.6 與命名空間）
+    function getAllWeapons() {
+      if (!rawXmlDoc) return [];
+      const allItems = rawXmlDoc.querySelectorAll('Item');
+      const weapons = [];
+      allItems.forEach(item => {
+        const typeAttr = item.getAttribute('xsi:type') || item.getAttribute('type') || '';
+        const name = item.querySelector('name')?.textContent || '';
+        const hasDmg = item.querySelector('minDamage') || item.querySelector('maxDamage');
+        if (typeAttr.includes('MeleeWeapon') || hasDmg || name.toLowerCase().includes('sword') || name.toLowerCase().includes('blade') || name.toLowerCase().includes('dagger') || name.toLowerCase().includes('club')) {
+          weapons.push(item);
+        }
+      });
+      return weapons;
+    }
+
     document.getElementById('saveFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -543,7 +445,7 @@
           document.getElementById('dispWeatherIcon').innerText = w.icon;
           document.getElementById('dispWeatherText').innerText = w.text;
 
-          // 3. 農作物統計
+          // 3. 作物統計
           let readyCount = 0;
           let growingCount = 0;
           const crops = rawXmlDoc.querySelectorAll('crop');
@@ -559,11 +461,8 @@
           document.getElementById('readyCount').innerText = readyCount;
           document.getElementById('growingCount').innerText = growingCount;
 
-          // 4. 渲染武器清單
+          // 4. 渲染全域武器清單
           renderWeapons();
-
-          // 5. 渲染村民好感度
-          renderVillagers();
 
           document.getElementById('emptyView').style.display = 'none';
           document.getElementById('mainView').style.display = 'block';
@@ -586,27 +485,25 @@
     function renderWeapons() {
       const container = document.getElementById('weaponContainer');
       container.innerHTML = '';
-      const weapons = rawXmlDoc.querySelectorAll('player > items > Item[xsi\\:type="MeleeWeapon"]');
+      const weapons = getAllWeapons();
 
       if (weapons.length === 0) {
-        container.innerHTML = '<div class="wood-box" style="text-align:center; color:var(--text-soft);">背包內目前沒有武器</div>';
+        container.innerHTML = '<div class="wood-box" style="text-align:center; color:var(--text-soft);">背包與箱子內目前沒有找到武器</div>';
         return;
       }
 
       weapons.forEach((wNode, idx) => {
-        const name = wNode.querySelector('name')?.textContent || "未知武器";
-        const minDmg = wNode.querySelector('minDamage')?.textContent || "0";
-        const maxDmg = wNode.querySelector('maxDamage')?.textContent || "0";
+        const name = wNode.querySelector('name')?.textContent || "近戰武器";
+        const minDmg = wNode.querySelector('minDamage')?.textContent || "1";
+        const maxDmg = wNode.querySelector('maxDamage')?.textContent || "3";
         const spd = wNode.querySelector('speed')?.textContent || "0";
         const crit = wNode.querySelector('critChance')?.textContent || "0.02";
 
         const card = document.createElement('div');
         card.className = 'wood-box';
         card.innerHTML = `
-          <div style="font-weight:900; font-size:15px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span>⚔️ ${name}</span>
-            <button class="pixel-btn" onclick="makeGodWeapon(${idx})" style="background:#D84315; border-color:#BF360C; font-size:11px; padding:3px 8px;">🔥 一鍵成神裝</button>
-          </div>
+          <div style="font-weight:900; font-size:15px; margin-bottom:8px;">⚔️ 武器名稱：${name}</div>
+          <button class="pixel-btn galaxy-btn" onclick="transformToGalaxySword(${idx})">🌌 一鍵幻化為「銀河之劍」(數值破表)</button>
           <div class="input-row">
             <label>傷害範圍 (Min - Max)</label>
             <div style="display:flex; gap:4px; align-items:center;">
@@ -623,22 +520,55 @@
             <label>暴擊機率 (0.0 ~ 1.0)</label>
             <input type="text" id="w_crit_${idx}" class="pixel-input" style="width:80px;" value="${crit}" />
           </div>
-          <button class="pixel-btn" onclick="saveWeapon(${idx})" style="width:100%; margin-top:6px; background:#455A64;">套用此武器數值</button>
+          <button class="pixel-btn" onclick="saveWeapon(${idx})" style="width:100%; margin-top:6px; background:#455A64;">套用此武器微調</button>
         `;
         container.appendChild(card);
       });
     }
 
-    window.makeGodWeapon = function(idx) {
-      document.getElementById(`w_min_${idx}`).value = 999;
-      document.getElementById(`w_max_${idx}`).value = 9999;
-      document.getElementById(`w_spd_${idx}`).value = 50;
-      document.getElementById(`w_crit_${idx}`).value = "1.0";
-      saveWeapon(idx);
+    // 幻化為銀河之劍
+    window.transformToGalaxySword = function(idx) {
+      const weapons = getAllWeapons();
+      const wNode = weapons[idx];
+      if (!wNode) return;
+
+      // 設置名稱與描述
+      let nameNode = wNode.querySelector('name');
+      if (!nameNode) { nameNode = rawXmlDoc.createElement('name'); wNode.appendChild(nameNode); }
+      nameNode.textContent = "Galaxy Sword";
+
+      let dispNode = wNode.querySelector('DisplayName');
+      if (dispNode) dispNode.textContent = "銀河之劍";
+
+      let descNode = wNode.querySelector('description');
+      if (!descNode) { descNode = rawXmlDoc.createElement('description'); wNode.appendChild(descNode); }
+      descNode.textContent = "它由不可思議的宇宙能量打造而成。";
+
+      // 設置 ID（1.5 與 1.6 同步相容）
+      const setOrCreate = (tag, val) => {
+        let node = wNode.querySelector(tag);
+        if (!node) { node = rawXmlDoc.createElement(tag); wNode.appendChild(node); }
+        node.textContent = val;
+      };
+
+      setOrCreate('parentSheetIndex', '4');
+      setOrCreate('initialParentSheetIndex', '4');
+      setOrCreate('itemId', '4');
+      setOrCreate('QualifiedItemId', '(W)4');
+
+      // 注入頂級破表數值
+      setOrCreate('minDamage', '999');
+      setOrCreate('maxDamage', '9999');
+      setOrCreate('speed', '50');
+      setOrCreate('critChance', '1.0');
+      setOrCreate('critMultiplier', '5.0');
+
+      renderWeapons();
+      alert('✨ 成功！該武器已直接幻化為頂級「銀河之劍」，攻擊力拉到 999~9999！');
     };
 
     window.saveWeapon = function(idx) {
-      const weapons = rawXmlDoc.querySelectorAll('player > items > Item[xsi\\:type="MeleeWeapon"]');
+      const weapons = getAllWeapons();
       const wNode = weapons[idx];
       if (!wNode) return;
 
@@ -647,49 +577,100 @@
       const spd = document.getElementById(`w_spd_${idx}`).value;
       const crit = document.getElementById(`w_crit_${idx}`).value;
 
-      if (wNode.querySelector('minDamage')) wNode.querySelector('minDamage').textContent = minDmg;
-      if (wNode.querySelector('maxDamage')) wNode.querySelector('maxDamage').textContent = maxDmg;
-      if (wNode.querySelector('speed')) wNode.querySelector('speed').textContent = spd;
-      if (wNode.querySelector('critChance')) wNode.querySelector('critChance').textContent = crit;
+      const setOrCreate = (tag, val) => {
+        let node = wNode.querySelector(tag);
+        if (!node) { node = rawXmlDoc.createElement(tag); wNode.appendChild(node); }
+        node.textContent = val;
+      };
+
+      setOrCreate('minDamage', minDmg);
+      setOrCreate('maxDamage', maxDmg);
+      setOrCreate('speed', spd);
+      setOrCreate('critChance', crit);
 
       alert('武器屬性已修改！別忘了點擊最下方的「儲存並匯出最新存檔」。');
     };
 
-    // 工具銥金化
+    // 全域工具升級至銥金（全版相容，同步處理外觀標籤）
     document.getElementById('btnMaxTools').addEventListener('click', function() {
       if (!rawXmlDoc) return;
-      const tools = rawXmlDoc.querySelectorAll('player > items > Item[upgradeLevel]');
-      tools.forEach(t => {
-        const uNode = t.querySelector('upgradeLevel');
-        if (uNode) uNode.textContent = "4"; // 4 代表銥金
+      const items = rawXmlDoc.querySelectorAll('Item');
+      let count = 0;
+
+      items.forEach(item => {
+        const typeAttr = item.getAttribute('xsi:type') || item.getAttribute('type') || '';
+        const name = item.querySelector('name')?.textContent || '';
+        
+        const isTool = typeAttr.includes('Pickaxe') || typeAttr.includes('Axe') || 
+                       typeAttr.includes('Hoe') || typeAttr.includes('WateringCan') ||
+                       name.includes('Pickaxe') || name.includes('Axe') || 
+                       name.includes('Hoe') || name.includes('Watering Can') ||
+                       item.querySelector('upgradeLevel') || item.querySelector('UpgradeLevel');
+
+        if (isTool) {
+          // 升級等級改為 4 (銥金)
+          if (item.querySelector('upgradeLevel')) item.querySelector('upgradeLevel').textContent = "4";
+          if (item.querySelector('UpgradeLevel')) item.querySelector('UpgradeLevel').textContent = "4";
+
+          // 1.6 版本同步調整 QualifiedItemId 與 Name
+          if (typeAttr.includes('Pickaxe') || name.includes('Pickaxe')) {
+            if (item.querySelector('name')) item.querySelector('name').textContent = "Iridium Pickaxe";
+            if (item.querySelector('QualifiedItemId')) item.querySelector('QualifiedItemId').textContent = "(T)IridiumPickaxe";
+            if (item.querySelector('itemId')) item.querySelector('itemId').textContent = "IridiumPickaxe";
+          } else if (typeAttr.includes('Axe') || name.includes('Axe')) {
+            if (item.querySelector('name')) item.querySelector('name').textContent = "Iridium Axe";
+            if (item.querySelector('QualifiedItemId')) item.querySelector('QualifiedItemId').textContent = "(T)IridiumAxe";
+            if (item.querySelector('itemId')) item.querySelector('itemId').textContent = "IridiumAxe";
+          } else if (typeAttr.includes('Hoe') || name.includes('Hoe')) {
+            if (item.querySelector('name')) item.querySelector('name').textContent = "Iridium Hoe";
+            if (item.querySelector('QualifiedItemId')) item.querySelector('QualifiedItemId').textContent = "(T)IridiumHoe";
+            if (item.querySelector('itemId')) item.querySelector('itemId').textContent = "IridiumHoe";
+          } else if (typeAttr.includes('WateringCan') || name.includes('WateringCan') || name.includes('Watering Can')) {
+            if (item.querySelector('name')) item.querySelector('name').textContent = "Iridium Watering Can";
+            if (item.querySelector('QualifiedItemId')) item.querySelector('QualifiedItemId').textContent = "(T)IridiumWateringCan";
+            if (item.querySelector('itemId')) item.querySelector('itemId').textContent = "IridiumWateringCan";
+          }
+          count++;
+        }
       });
-      alert('背包內所有工具已升級為「銥金等級」！');
+
+      alert(`升級完成！共將 ${count} 件工具升級為「銥金等級」！`);
     });
 
-    // 水壺無限水
+    // 水壺無限水（全域）
     document.getElementById('btnBottomlessWater').addEventListener('click', function() {
       if (!rawXmlDoc) return;
-      const cans = rawXmlDoc.querySelectorAll('player > items > Item[xsi\\:type="WateringCan"]');
-      cans.forEach(c => {
-        const b1 = c.querySelector('isBottomless');
-        const b2 = c.querySelector('IsBottomless');
-        const wNode = c.querySelector('WaterLeft');
-        if (b1) b1.textContent = "true";
-        if (b2) b2.textContent = "true";
-        if (wNode) wNode.textContent = "999";
+      const items = rawXmlDoc.querySelectorAll('Item');
+      let count = 0;
+      items.forEach(c => {
+        const typeAttr = c.getAttribute('xsi:type') || c.getAttribute('type') || '';
+        const name = c.querySelector('name')?.textContent || '';
+        if (typeAttr.includes('WateringCan') || name.includes('Watering Can')) {
+          let b1 = c.querySelector('isBottomless');
+          if (!b1) { b1 = rawXmlDoc.createElement('isBottomless'); c.appendChild(b1); }
+          b1.textContent = "true";
+
+          let b2 = c.querySelector('IsBottomless');
+          if (!b2) { b2 = rawXmlDoc.createElement('IsBottomless'); c.appendChild(b2); }
+          b2.textContent = "true";
+
+          let wNode = c.querySelector('WaterLeft');
+          if (wNode) wNode.textContent = "999";
+          count++;
+        }
       });
-      alert('水壺已改造為無限水量！');
+      alert(`水壺已改造完成！共 ${count} 支水壺已獲得「無限水量」！`);
     });
 
-    // 現有道具全補滿 999
+    // 道具堆疊 999
     document.getElementById('btnMaxStack').addEventListener('click', function() {
       if (!rawXmlDoc) return;
-      const items = rawXmlDoc.querySelectorAll('player > items > Item > stack');
+      const items = rawXmlDoc.querySelectorAll('Item > stack');
       items.forEach(s => {
         const val = parseInt(s.textContent || "0");
         if (val > 1) s.textContent = "999";
       });
-      alert('背包中所有可堆疊道具已全部變更為 999 堆疊！');
+      alert('背包與所有儲物箱中現有可堆疊道具，已全部變更為 999 堆疊！');
     });
 
     // 背包擴充 36 格
@@ -698,62 +679,6 @@
       const mItems = rawXmlDoc.querySelector('player > maxItems');
       if (mItems) mItems.textContent = "36";
       alert('已解鎖 36 格全滿背包容量！');
-    });
-
-    function renderVillagers() {
-      const vContainer = document.getElementById('villagerContainer');
-      vContainer.innerHTML = '';
-      const friendships = [];
-      rawXmlDoc.querySelectorAll('friendshipData > item').forEach(item => {
-        const key = item.querySelector('key > string')?.textContent;
-        const pts = parseInt(item.querySelector('value > Friendship > Points')?.textContent || "0");
-        if (key) friendships.push({ key, pts, node: item });
-      });
-
-      friendships.sort((a, b) => b.pts - a.pts);
-
-      friendships.forEach((f, idx) => {
-        const meta = villagerMeta[f.key] || { name: f.key, bday: "未知", gifts: ["暫無資料"] };
-        const hearts = Math.min(10, Math.floor(f.pts / 250));
-        const heartBar = '❤️'.repeat(hearts) + '🤍'.repeat(10 - hearts);
-        const giftBadges = meta.gifts.map(g => `<span class="gift-tag">${g}</span>`).join('');
-
-        const card = document.createElement('div');
-        card.className = 'wood-box villager-card';
-        card.innerHTML = `
-          <div class="v-header">
-            <span class="v-name">${meta.name}</span>
-            <div style="display:flex; gap:6px; align-items:center;">
-              <span class="v-bday">🎂 ${meta.bday}</span>
-              <button class="pixel-btn" onclick="maxSingleFriendship('${f.key}')" style="background:#AD1457; border-color:#880E4F; font-size:10px; padding:2px 6px;">💖 10心</button>
-            </div>
-          </div>
-          <div class="heart-track" id="hb_${f.key}">${heartBar} <span class="pts-text">(${f.pts}/2500)</span></div>
-          <div class="gift-tag-list">${giftBadges}</div>
-        `;
-        vContainer.appendChild(card);
-      });
-    }
-
-    window.maxSingleFriendship = function(key) {
-      const items = rawXmlDoc.querySelectorAll('friendshipData > item');
-      for (let item of items) {
-        if (item.querySelector('key > string')?.textContent === key) {
-          const ptsNode = item.querySelector('value > Friendship > Points');
-          if (ptsNode) ptsNode.textContent = "2500";
-          break;
-        }
-      }
-      renderVillagers();
-    };
-
-    // 全員滿心
-    document.getElementById('btnMaxAllHearts').addEventListener('click', function() {
-      if (!rawXmlDoc) return;
-      const points = rawXmlDoc.querySelectorAll('friendshipData > item > value > Friendship > Points');
-      points.forEach(p => p.textContent = "2500");
-      renderVillagers();
-      alert('所有村民好感度已全部拉滿至 10 心 (2500分)！');
     });
 
     // 儲存並匯出
